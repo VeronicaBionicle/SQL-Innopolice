@@ -39,16 +39,31 @@ from (
 	from generate_series(0,100000)
 ) as r;
 
+/* Первый вариант решения */
+alter table t3 add column dt_new date generated always as (make_date(dt_1/10000, mod(dt_1,100), mod(dt_1/100,100))) stored;
+
+select distinct * from t3;
+
+/* Второй вариант решения */
+alter table t3 drop column dt_new;
 alter table t3 add column dt_new date;
 
-select distinct * from t3;
+/* После предыдущего варианта можно просто изменить тип
+alter table t3 alter column dt_new type date;
+ */
 
+create or replace function t3_on_change_dt_1() returns trigger as $$
+begin
+	new.dt_new = to_date(new.dt_1::text,'YYYYDDMM');
+	return new;
+end;
+$$ language plpgsql;
+
+create or replace trigger t3_change before insert or update on t3
+for each row execute procedure t3_on_change_dt_1();
+
+-- Прокрутить все данные
 update t3
-set dt_new = to_date(dt_1::text,'YYYYDDMM');
-
-select distinct * from t3;
-
-update t3
-set dt_new = make_date(dt_1/10000, mod(dt_1,100), mod(dt_1/100,100));
+set dt_1 = dt_1;
 
 select distinct * from t3;
