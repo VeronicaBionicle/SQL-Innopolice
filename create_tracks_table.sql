@@ -12,7 +12,7 @@ create table veronikanenyuk.t_tracks
 	explicit_content boolean not null,
 	monthly_listens_total int8 not null,
 	artists_likes_total int8 not null,
-	constraint PK_tracks_id PRIMARY KEY(track_id)
+	constraint PK_tracks_id PRIMARY KEY(track_id, link) -- Ссылка на трек уникальна
 );
 
 /* Индекс для поиска по имени артиста */
